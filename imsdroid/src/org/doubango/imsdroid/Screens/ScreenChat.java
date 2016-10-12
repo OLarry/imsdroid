@@ -38,9 +38,11 @@ import org.doubango.ngn.services.INgnHistoryService;
 import org.doubango.ngn.services.INgnSipService;
 import org.doubango.ngn.sip.NgnMessagingSession;
 import org.doubango.ngn.sip.NgnMsrpSession;
+import org.doubango.ngn.utils.NgnConfigurationEntry;
 import org.doubango.ngn.utils.NgnPredicate;
 import org.doubango.ngn.utils.NgnStringUtils;
 import org.doubango.ngn.utils.NgnUriUtils;
+import org.doubango.ngn.services.INgnConfigurationService;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -66,6 +68,7 @@ public class ScreenChat extends BaseScreen{
 	
 	private final INgnHistoryService mHistorytService;
 	private final INgnSipService mSipService;
+    private final INgnConfigurationService mConfigurationService;
 	
 private InputMethodManager mInputMethodManager;
 	
@@ -87,6 +90,7 @@ private InputMethodManager mInputMethodManager;
 		mMediaType = NgnMediaType.None;
 		mHistorytService = getEngine().getHistoryService();
 		mSipService = getEngine().getSipService();
+        mConfigurationService = getEngine().getConfigurationService();
 	}
 	
 	@Override
@@ -277,9 +281,18 @@ private InputMethodManager mInputMethodManager;
 			final String remotePartyUri = NgnUriUtils.makeValidSipUri(sRemoteParty);
 			final NgnMessagingSession imSession = NgnMessagingSession.createOutgoingSession(mSipService.getSipStack(), 
 					remotePartyUri);
-			if(!(ret = imSession.sendTextMessage(mEtCompose.getText().toString()))){
-				e.setStatus(StatusType.Failed);
-			}
+
+
+            // send chat message via Binary (SMS over IP) or Text
+            if (mConfigurationService.getBoolean(NgnConfigurationEntry.RCS_USE_BINARY_SMS, NgnConfigurationEntry.DEFAULT_RCS_USE_BINARY_SMS)) {
+                if(!(ret = imSession.SendBinaryMessage(mEtCompose.getText().toString(),mConfigurationService.getString(NgnConfigurationEntry.RCS_SMSC, NgnConfigurationEntry.DEFAULT_RCS_SMSC)))){
+                    e.setStatus(StatusType.Failed);
+                }
+            } else {
+                if(!(ret = imSession.sendTextMessage(mEtCompose.getText().toString()))){
+                    e.setStatus(StatusType.Failed);
+                }
+            }
 			NgnMessagingSession.releaseSession(imSession);
 		}
 		

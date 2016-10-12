@@ -133,14 +133,8 @@ public class NgnMessagingSession extends NgnSipSession {
             super.addCaps("+g.3gpp.smsip");       
                     
             RPMessage rpMessage;
-            //if(ServiceManager.getConfigurationService().getBoolean(CONFIGURATION_SECTION.RCS, CONFIGURATION_ENTRY.HACK_SMS, false)){
-                //    rpMessage = SMSEncoder.encodeDeliver(++ScreenSMSCompose.SMS_MR, SMSCPhoneNumber, dstPhoneNumber, new String(content));
-                //    session.addHeader("P-Asserted-Identity", SMSC);
-            //}
-            //else{
-                    rpMessage = SMSEncoder.encodeSubmit(++NgnMessagingSession.SMS_MR, SMSCPhoneNumber, dstPhoneNumber, text);
-            //}
-        
+            rpMessage = SMSEncoder.encodeSubmit(++NgnMessagingSession.SMS_MR, SMSCPhoneNumber, dstPhoneNumber, text);
+
             long rpMessageLen = rpMessage.getPayloadLength();
             ByteBuffer payload = ByteBuffer.allocateDirect((int)rpMessageLen);
             long payloadLength = rpMessage.getPayload(payload, (long)payload.capacity());
@@ -171,6 +165,7 @@ public class NgnMessagingSession extends NgnSipSession {
     	else {
     		super.addHeader("Content-Type", NgnContentType.TEXT_PLAIN);
     	}
+        super.addCaps("+g.oma.sip-im");
         byte[] bytes = text.getBytes();
         ByteBuffer payload = ByteBuffer.allocateDirect(bytes.length);
         payload.put(bytes);

@@ -1176,6 +1176,8 @@ public class NgnSipService extends NgnBaseService implements INgnSipService,
 									.getSipHeaderValue("P-Asserted-Identity");
 							String SMSCPhoneNumber;
 							String origPhoneNumber = smsData.getOA();
+							// get call-id for In-Reply-To
+                            String rpdataCallid = message.getSipHeaderValue("Call-ID");
 
 							/* Destination address */
 							if (origPhoneNumber != null) {
@@ -1231,6 +1233,8 @@ public class NgnSipService extends NgnBaseService implements INgnSipService,
 										m.addHeader(
 												"Content-Transfer-Encoding",
 												"binary");
+                                        // now put the call-id from incoming RP-DATA into In-Reply-To header
+                                        m.addHeader("In-Reply-To", rpdataCallid);
 										m.addCaps("+g.3gpp.smsip");
 										m.send(buffer, len);
 										m.delete();

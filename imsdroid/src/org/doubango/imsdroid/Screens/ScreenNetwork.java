@@ -46,6 +46,7 @@ public class ScreenNetwork extends BaseScreen {
 	private CheckBox mCb3G;
 	private RadioButton mRbIPv4;
 	private RadioButton mRbIPv6;
+    private EditText mEtRegTimeout;
 	
 	private final static String[] sSpinnerTransportItems = new String[] {NgnConfigurationEntry.DEFAULT_NETWORK_TRANSPORT.toUpperCase(), "TCP", "TLS"/*, "SCTP"*/};
 	private final static String[] sSpinnerProxydiscoveryItems = new String[] {NgnConfigurationEntry.DEFAULT_NETWORK_PCSCF_DISCOVERY, NgnConfigurationEntry.PCSCF_DISCOVERY_DNS_SRV/*, "DHCPv4/v6", "Both"*/};
@@ -70,6 +71,7 @@ public class ScreenNetwork extends BaseScreen {
         mCb3G = (CheckBox)findViewById(R.id.screen_network_checkBox_3g);
         mRbIPv4 = (RadioButton)findViewById(R.id.screen_network_radioButton_ipv4);
         mRbIPv6 = (RadioButton)findViewById(R.id.screen_network_radioButton_ipv6);
+		mEtRegTimeout = (EditText)findViewById(R.id.screen_network_editText_reg_timeout);
         
         // spinners
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, sSpinnerTransportItems);
@@ -81,6 +83,7 @@ public class ScreenNetwork extends BaseScreen {
         
         mEtProxyHost.setText(mConfigurationService.getString(NgnConfigurationEntry.NETWORK_PCSCF_HOST, NgnConfigurationEntry.DEFAULT_NETWORK_PCSCF_HOST));
         mEtProxyPort.setText(Integer.toString(mConfigurationService.getInt(NgnConfigurationEntry.NETWORK_PCSCF_PORT, NgnConfigurationEntry.DEFAULT_NETWORK_PCSCF_PORT)));
+        mEtRegTimeout.setText(Integer.toString(mConfigurationService.getInt(NgnConfigurationEntry.NETWORK_REGISTRATION_TIMEOUT, NgnConfigurationEntry.DEFAULT_NETWORK_REGISTRATION_TIMEOUT)));
         mSpTransport.setSelection(super.getSpinnerIndex(
 				mConfigurationService.getString(NgnConfigurationEntry.NETWORK_TRANSPORT, sSpinnerTransportItems[0]),
 				sSpinnerTransportItems));
@@ -105,6 +108,7 @@ public class ScreenNetwork extends BaseScreen {
         super.addConfigurationListener(mCb3G);
         super.addConfigurationListener(mRbIPv4);
         super.addConfigurationListener(mRbIPv6);
+        super.addConfigurationListener(mEtRegTimeout);
 	}
 	
 	protected void onPause() {
@@ -125,6 +129,8 @@ public class ScreenNetwork extends BaseScreen {
 					mCb3G.isChecked());
 			mConfigurationService.putString(NgnConfigurationEntry.NETWORK_IP_VERSION, 
 					mRbIPv4.isChecked() ? "ipv4" : "ipv6");
+            mConfigurationService.putInt(NgnConfigurationEntry.NETWORK_REGISTRATION_TIMEOUT,
+                    NgnStringUtils.parseInt(mEtRegTimeout.getText().toString().trim(), NgnConfigurationEntry.DEFAULT_NETWORK_REGISTRATION_TIMEOUT));
 			
 			// Compute
 			if(!mConfigurationService.commit()){
